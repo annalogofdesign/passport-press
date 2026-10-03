@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Stamp Maker</title>
+  <meta name="description" content="Turn a name, a phrase or a logo into a passport stamp. Pick a shape, an ink and a typeface, then download it as a PNG or SVG.">
+  <meta name="theme-color" content="#fbf8f0">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32' fill='none' stroke='%2321539c'%3E%3Ccircle cx='16' cy='16' r='13' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='7.5' stroke-width='1.5'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main class="stage" data-stage>
+    <svg class="paper" data-paper aria-hidden="true" focusable="false" preserveAspectRatio="none"></svg>
+    <header class="masthead">
+      <div>
+        <h1>Stamp Maker</h1>
+        <p class="tagline">Turn a name, a phrase or a logo into a passport stamp.</p>
+      </div>
+      <div class="masthead-actions">
+        <button type="button" class="icon-btn" data-sound aria-label="Stamp sound">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M3.5 7.5h3l4-3.5v12l-4-3.5h-3z"/><path class="sound-waves" d="M13.5 7.5a3.5 3.5 0 0 1 0 5M15.5 5a7 7 0 0 1 0 10"/><path class="sound-off" d="M13.5 8l4 4m0-4-4 4"/>
+          </svg>
+        </button>
+        <button type="button" class="text-btn" data-share>Copy link</button>
+        <button type="button" class="btn btn-small" data-surprise>Surprise me</button>
+      </div>
+    </header>
+    <button type="button" class="stamp" data-press aria-label="Press the stamp again with fresh ink"></button>
+    <div class="tool" data-tool aria-hidden="true"><div class="tool-shadow"></div><div class="tool-block"><div class="tool-knob"></div></div></div>
+    <p class="hint" data-hint></p>
+  </main>
+
+  <form class="panel" id="controls" aria-label="Stamp settings" autocomplete="off">
+    <div class="panel-scroll">
+      <section aria-labelledby="h-shape">
+        <h2 id="h-shape">Shape</h2>
+        <div class="frames" role="radiogroup" aria-labelledby="h-shape" data-frames></div>
+      </section>
+
+      <section aria-labelledby="h-words">
+        <h2 id="h-words">Words</h2>
+        <p class="note">Leave a line empty to take it off the stamp.</p>
+        <label class="field">Top line
+          <input type="text" name="top" maxlength="40" spellcheck="false" data-1p-ignore>
+        </label>
+        <div class="field" role="radiogroup" aria-labelledby="l-centre">
+          <span id="l-centre">Centre</span>
+          <div class="seg">
+            <label><input type="radio" name="centre" value="text" class="sr-only">Words</label>
+            <label><input type="radio" name="centre" value="logo" class="sr-only">Logo</label>
+          </div>
+        </div>
+        <label class="field" data-when="centre=text">Main word
+          <input type="text" name="word" maxlength="40" spellcheck="false" data-1p-ignore>
+        </label>
+        <label class="field" data-when="centre=text">Second line
+          <input type="text" name="sub" maxlength="40" spellcheck="false" data-1p-ignore>
+        </label>
+
+        <div class="logo" data-when="centre=logo">
+          <div class="logo-empty" data-logo="empty">
+            <label class="btn">Choose a logo
+              <input type="file" name="logoFile" accept=".svg,image/svg+xml,image/png,image/jpeg,image/webp" class="sr-only">
+            </label>
+            <p class="note">SVG, PNG or JPG, or drop a file anywhere. It stays in your browser.</p>
+          </div>
+          <div class="logo-loaded" data-logo="loaded">
+            <div class="logo-file">
+              <img alt="Your logo" data-logo-thumb>
+              <label class="btn btn-small">Replace
+                <input type="file" name="logoFile" accept=".svg,image/svg+xml,image/png,image/jpeg,image/webp" class="sr-only">
+              </label>
+              <button type="button" class="btn btn-small" data-logo-remove>Remove</button>
+            </div>
+            <div class="field" role="radiogroup" aria-labelledby="l-trace">
+              <span id="l-trace">Ink the</span>
+              <div class="seg">
+                <label><input type="radio" name="logoMode" value="shape" class="sr-only">Whole logo</label>
+                <label><input type="radio" name="logoMode" value="dark" class="sr-only">Dark parts only</label>
+              </div>
+            </div>
+            <label class="range">Threshold <output data-for="logoThreshold" data-format="percent"></output>
+              <input type="range" name="logoThreshold" min="0.05" max="0.95" step="0.01">
+            </label>
+            <label class="range">Logo size <output data-for="logoSize" data-format="times"></output>
+              <input type="range" name="logoSize" min="0.5" max="1.5" step="0.05">
+            </label>
+            <label class="check"><input type="checkbox" name="logoInvert"> Invert</label>
+          </div>
+          <p class="error" data-logo-error role="alert" hidden></p>
+        </div>
+
+        <label class="field">Date
+          <input type="text" name="date" maxlength="40" spellcheck="false" data-1p-ignore>
+        </label>
+        <label class="field">Bottom line
+          <input type="text" name="bottom" maxlength="40" spellcheck="false" data-1p-ignore>
+        </label>
+      </section>
+
+      <section aria-labelledby="h-ink">
+        <h2 id="h-ink">Ink</h2>
+        <div class="swatches" role="radiogroup" aria-labelledby="h-ink" data-inks></div>
+        <label class="range">Ink strength <output data-for="inkOpacity" data-format="percent"></output>
+          <input type="range" name="inkOpacity" min="0.4" max="1" step="0.01">
+        </label>
+      </section>
+
+      <section aria-labelledby="h-paper">
+        <h2 id="h-paper">Paper</h2>
+        <div class="papers" role="radiogroup" aria-labelledby="h-paper" data-papers></div>
+        <label class="range" data-when="paper=passport|cotton|aged|kraft|grid">Paper strength <output data-for="paperStrength" data-format="percent"></output>
+          <input type="range" name="paperStrength" min="0.1" max="1" step="0.05">
+        </label>
+      </section>
+
+      <section aria-labelledby="h-style">
+        <h2 id="h-style">Style</h2>
+        <div class="field" role="radiogroup" aria-labelledby="l-font">
+          <span id="l-font">Typeface</span>
+          <div class="seg" data-faces></div>
+        </div>
+        <label class="range">Border weight <output data-for="rule" data-format="times"></output>
+          <input type="range" name="rule" min="0.6" max="1.8" step="0.05">
+        </label>
+        <label class="range" data-when="frame=rect|postage|squared">Corners <output data-for="corner"></output>
+          <input type="range" name="corner" min="1" max="24" step="1">
+        </label>
+        <div class="field" role="radiogroup" aria-labelledby="l-mark" data-when="frame=rect|postage">
+          <span id="l-mark">Plane</span>
+          <div class="seg">
+            <label><input type="radio" name="mark" value="arrive" class="sr-only">Arriving</label>
+            <label><input type="radio" name="mark" value="depart" class="sr-only">Departing</label>
+            <label><input type="radio" name="mark" value="none" class="sr-only">None</label>
+          </div>
+        </div>
+        <label class="range">Tilt <output data-for="tilt" data-format="degrees"></output>
+          <input type="range" name="tilt" min="-20" max="20" step="1">
+        </label>
+      </section>
+
+      <section aria-labelledby="h-wear">
+        <h2 id="h-wear">Wear</h2>
+        <label class="range">Rough edges <output data-for="roughness"></output>
+          <input type="range" name="roughness" min="0" max="5" step="0.1">
+        </label>
+        <label class="range">Dry spots <output data-for="voids" data-format="percent"></output>
+          <input type="range" name="voids" min="0" max="1" step="0.05">
+        </label>
+        <label class="range">Uneven pressure <output data-for="pressure" data-format="percent"></output>
+          <input type="range" name="pressure" min="0" max="0.9" step="0.05">
+        </label>
+        <label class="check"><input type="checkbox" name="doubleStrike"> Double strike</label>
+      </section>
+
+      <section aria-labelledby="h-file">
+        <h2 id="h-file">File</h2>
+        <label class="field">PNG size
+          <select name="pngWidth">
+            <option value="800">Small, 800 px wide</option>
+            <option value="1600" selected>Large, 1600 px wide</option>
+            <option value="3200">Print, 3200 px wide</option>
+          </select>
+        </label>
+        <label class="check"><input type="checkbox" name="withPaper"> Include the paper in the file</label>
+      </section>
+
+      <p class="credit">Made by Anna Skopenko. Typefaces are open source: Inter Tight, Barlow Condensed, Courier Prime, Zilla Slab.</p>
+      <button type="button" class="text-btn start-over" data-reset>Start over with a new stamp</button>
+    </div>
+
+    <footer class="actions">
+      <p class="status" role="status" data-status></p>
+      <div class="actions-row">
+        <button type="submit" class="btn btn-primary" data-png>Download PNG</button>
+        <button type="button" class="btn" data-svg>SVG</button>
+        <button type="button" class="btn" data-copy>Copy</button>
+      </div>
+    </footer>
+  </form>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>

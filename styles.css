@@ -1,0 +1,401 @@
+:root {
+  --paper: #fbf8f0;
+  --surface: oklch(0.992 0.005 89.7);
+  --field: #fff;
+  --ink: oklch(0.23 0.028 219.7);
+  --muted: oklch(0.23 0.028 219.7 / 0.64);
+  --disabled: oklch(0.23 0.028 219.7 / 0.36);
+  --line: oklch(0.23 0.028 219.7 / 0.12);
+  --line-strong: oklch(0.23 0.028 219.7 / 0.28);
+  --tint: oklch(0.23 0.028 219.7 / 0.06);
+  --tint-hover: oklch(0.23 0.028 219.7 / 0.1);
+  --danger: oklch(0.48 0.17 27);
+
+  --ui: "Inter Tight", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+
+  color-scheme: light;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 400px;
+  height: 100dvh;
+  background: var(--paper);
+  color: var(--ink);
+  font: 15px/1.4 var(--ui);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-synthesis: none;
+}
+
+h1, h2, p { margin: 0; }
+button, input, select { font: inherit; color: inherit; }
+button, label, select { touch-action: manipulation; }
+[hidden] { display: none !important; }
+
+:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* ---------- Stage ---------- */
+
+.stage {
+  position: relative;
+  display: grid;
+  place-items: center;
+  min-height: 0;
+  container-type: size;
+}
+.paper { position: absolute; inset: 0; width: 100%; height: 100%; }
+.stage[data-dropping] { outline: 2px dashed var(--line-strong); outline-offset: -12px; }
+
+.masthead {
+  position: absolute;
+  inset: 20px 28px auto;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+h1 { font-size: 17px; font-weight: 650; letter-spacing: -0.01em; white-space: nowrap; }
+.tagline { margin-top: 2px; color: var(--muted); }
+.masthead-actions { display: flex; align-items: center; gap: 4px; margin: -4px 0 0; }
+.icon-btn {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 0;
+  border-radius: 8px;
+  background: none;
+  color: var(--muted);
+  cursor: pointer;
+  transition: color 150ms ease-out;
+}
+.icon-btn svg { width: 20px; height: 20px; }
+.icon-btn[aria-pressed="true"] .sound-off,
+.icon-btn[aria-pressed="false"] .sound-waves { display: none; }
+@media (hover: hover) {
+  .icon-btn:hover { color: var(--ink); }
+}
+.btn-small.btn { background: var(--surface); box-shadow: 0 0 0 1px var(--line-strong); }
+
+/* Sized from the stamp's own footprint, so tilting it never changes its scale */
+.stamp {
+  width: calc(var(--bw, 264) * min(2.3px, 100cqw / 400, 100cqh / 340));
+  padding: 0;
+  border: 0;
+  border-radius: 12px;
+  background: none;
+  cursor: pointer;
+  mix-blend-mode: multiply; /* ink soaks into the paper rather than sitting on it */
+  -webkit-tap-highlight-color: transparent;
+}
+.stamp:focus-visible { outline-offset: 8px; }
+.stamp svg { display: block; width: 100%; height: auto; overflow: visible; }
+
+/* The rubber stamp itself, seen from above: a wooden block with a knob in the ink's colour.
+   Only there while it presses; hero.js-style choreography lives in app.js */
+.tool {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  z-index: 3;
+  width: var(--tw);
+  height: var(--th);
+  translate: calc(-50% + var(--tx, 0px)) -50%;
+  rotate: var(--tr);
+  opacity: 0;
+  pointer-events: none;
+}
+.tool-shadow, .tool-block { position: absolute; inset: 0; border-radius: var(--radius); }
+.tool-shadow { background: oklch(0.2 0.03 60); filter: blur(10px); opacity: 0; }
+.tool-block {
+  display: grid;
+  place-items: center;
+  background:
+    repeating-linear-gradient(94deg, oklch(0.45 0.07 55 / 0.12) 0 1px, transparent 1px 7px, oklch(0.45 0.07 55 / 0.07) 7px 9px, transparent 9px 15px),
+    linear-gradient(155deg, oklch(0.78 0.08 72), oklch(0.65 0.09 58));
+  box-shadow:
+    inset 0 1px 0 oklch(1 0 0 / 0.4),
+    inset 0 -4px 0 oklch(0.42 0.07 50 / 0.35),
+    0 0 0 1px oklch(0.38 0.06 50 / 0.45);
+}
+.tool-knob {
+  width: var(--knob);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: radial-gradient(circle at 34% 30%, color-mix(in oklch, var(--ink-c) 45%, white) 0 7%, var(--ink-c) 42%, color-mix(in oklch, var(--ink-c) 65%, black));
+  box-shadow: 0 0 0 1px oklch(0 0 0 / 0.25), 0 8px 16px oklch(0.2 0.03 60 / 0.35);
+}
+
+.hint {
+  position: absolute;
+  inset: auto 0 20px;
+  text-align: center;
+  font-size: 13px;
+  color: var(--muted);
+  pointer-events: none;
+}
+
+/* ---------- Panel ---------- */
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  background: var(--surface);
+  border-left: 1px solid var(--line);
+}
+.panel-scroll { flex: 1; min-height: 0; overflow-y: auto; padding: 0 24px 24px; }
+
+section { display: grid; gap: 14px; padding-block: 20px; }
+section + section { border-top: 1px solid var(--line); }
+h2 { font-size: 15px; font-weight: 650; }
+.note { margin-top: -8px; font-size: 13px; color: var(--muted); text-wrap: pretty; }
+.start-over { justify-self: start; margin: 4px 0 0 -10px; }
+.credit { padding-top: 20px; border-top: 1px solid var(--line); font-size: 13px; color: var(--muted); text-wrap: pretty; }
+
+.field { display: grid; gap: 6px; font-size: 13px; font-weight: 500; color: var(--muted); }
+
+input[type="text"], select {
+  width: 100%;
+  height: 42px;
+  padding: 0 12px;
+  border: 1px solid var(--line-strong);
+  border-radius: 8px;
+  background: var(--field);
+  color: var(--ink);
+  font-size: 16px; /* below 16px, iOS zooms the page on focus */
+  font-weight: 400;
+  transition: border-color 150ms ease-out;
+}
+input[type="text"]:focus-visible, select:focus-visible { outline-offset: 0; border-color: var(--ink); }
+@media (hover: hover) {
+  input[type="text"]:hover, select:hover { border-color: var(--ink); }
+}
+
+.range {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 2px 8px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--muted);
+}
+.range output { font-variant-numeric: tabular-nums; }
+.range input { grid-column: 1 / -1; width: 100%; height: 28px; margin: 0; accent-color: var(--ink); cursor: pointer; }
+
+.check { display: flex; align-items: center; gap: 10px; min-height: 32px; cursor: pointer; }
+.check input { width: 18px; height: 18px; margin: 0; accent-color: var(--ink); cursor: pointer; }
+
+/* Segmented choice: radios under their labels */
+.seg {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  gap: 2px;
+  padding: 3px;
+  border-radius: 10px;
+  background: var(--tint);
+}
+.seg label {
+  position: relative;
+  display: grid;
+  place-items: center;
+  min-height: 36px;
+  padding: 4px 6px;
+  border-radius: 7px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--muted);
+  text-align: center;
+  cursor: pointer;
+  transition: color 150ms ease-out;
+}
+.seg label:has(:checked) {
+  background: var(--field);
+  color: var(--ink);
+  box-shadow: 0 0 0 1px var(--line), 0 1px 2px oklch(0.23 0.028 219.7 / 0.08);
+}
+.seg label:has(:focus-visible) { outline: 2px solid var(--ink); outline-offset: 2px; }
+/* Four faces of four widths share one row */
+[data-faces] label { font-size: 13px; }
+
+.frames { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px; }
+.frame {
+  position: relative;
+  display: grid;
+  place-items: center;
+  aspect-ratio: 1;
+  border-radius: 10px;
+  box-shadow: inset 0 0 0 1px var(--line);
+  color: var(--muted);
+  cursor: pointer;
+  transition: color 150ms ease-out, box-shadow 150ms ease-out;
+}
+.frame svg { width: 28px; height: 28px; }
+.frame:has(:checked) { background: var(--field); color: var(--ink); box-shadow: inset 0 0 0 1.5px var(--ink); }
+.frame:has(:focus-visible) { outline: 2px solid var(--ink); outline-offset: 2px; }
+@media (hover: hover) {
+  .frame:hover, .seg label:hover { color: var(--ink); }
+}
+
+.swatches { display: flex; flex-wrap: wrap; gap: 14px; padding: 4px; }
+.swatch {
+  position: relative;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--c);
+  cursor: pointer;
+  transition: box-shadow 150ms ease-out;
+}
+/* 44px hit area around a 30px dot */
+.swatch::before { content: ""; position: absolute; inset: -7px; }
+.swatch:has(:checked), .swatch[data-active] { box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px var(--c); }
+.swatch:has(:focus-visible) { outline: 2px solid var(--ink); outline-offset: 6px; }
+.swatch-custom:not([data-active]) {
+  background: conic-gradient(from 0deg, #ba2b28, #c9962b, #256d4c, #21539c, #58368e, #ba2b28);
+}
+.swatch-custom input { position: absolute; inset: -7px; width: 44px; height: 44px; opacity: 0; cursor: pointer; }
+
+.papers { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px 10px; }
+.paper-chip {
+  position: relative;
+  display: grid;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--muted);
+  text-align: center;
+  cursor: pointer;
+  transition: color 150ms ease-out;
+}
+.paper-chip svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 8px;
+  box-shadow: 0 0 0 1px var(--line);
+  transition: box-shadow 150ms ease-out;
+}
+.paper-chip:has(:checked) { color: var(--ink); }
+.paper-chip:has(:checked) svg { box-shadow: 0 0 0 2px var(--surface), 0 0 0 3.5px var(--ink); }
+.paper-chip:has(:focus-visible) svg { outline: 2px solid var(--ink); outline-offset: 5px; }
+@media (hover: hover) {
+  .paper-chip:hover { color: var(--ink); }
+}
+
+/* ---------- Logo ---------- */
+
+.logo { display: grid; gap: 14px; }
+.logo-empty, .logo-loaded { display: grid; gap: 14px; }
+.logo-empty .note { margin-top: -6px; }
+.logo-file { display: flex; align-items: center; gap: 8px; }
+.logo-file img {
+  width: 44px;
+  height: 44px;
+  margin-right: auto;
+  padding: 4px;
+  border-radius: 8px;
+  background: var(--field);
+  box-shadow: 0 0 0 1px var(--line);
+  object-fit: contain;
+}
+.error { font-size: 13px; color: var(--danger); }
+
+/* ---------- Buttons ---------- */
+
+.btn {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  height: 44px;
+  padding: 0 16px;
+  border: 0;
+  border-radius: 10px;
+  background: var(--tint);
+  color: var(--ink);
+  font-size: 15px;
+  font-weight: 550;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background-color 150ms ease-out, transform 120ms var(--ease-out);
+}
+.btn:active { transform: scale(0.97); }
+.btn:has(:focus-visible) { outline: 2px solid var(--ink); outline-offset: 2px; }
+.btn:disabled { color: var(--disabled); cursor: default; }
+.btn-small { height: 36px; padding: 0 12px; font-size: 14px; }
+.btn-primary { flex: 1; background: var(--ink); color: var(--paper); }
+.btn-primary:disabled { background: var(--line-strong); color: var(--paper); }
+
+.text-btn {
+  min-height: 44px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 8px;
+  background: none;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--muted);
+  cursor: pointer;
+  transition: color 150ms ease-out;
+}
+
+@media (hover: hover) {
+  .btn:not(:disabled):hover { background: var(--tint-hover); }
+  .btn-primary:not(:disabled):hover { background: color-mix(in oklch, var(--ink) 86%, white); }
+  .text-btn:hover { color: var(--ink); }
+}
+
+.actions {
+  padding: 12px 24px calc(16px + env(safe-area-inset-bottom));
+  border-top: 1px solid var(--line);
+  background: var(--surface);
+}
+.actions-row { display: flex; gap: 8px; }
+.actions-row .btn:not(.btn-primary) { min-width: 76px; }
+.status { font-size: 13px; text-wrap: pretty; }
+.status:not(:empty) { margin-bottom: 10px; }
+
+/* ---------- Small screens: the stamp stays in view while the settings scroll ---------- */
+
+@media (max-width: 860px) {
+  body { display: block; height: auto; }
+  .stage {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    height: 44svh;
+    min-height: 260px;
+    background: var(--paper);
+    border-bottom: 1px solid var(--line);
+  }
+  .masthead { inset: 10px 16px auto; }
+  .tagline, .hint { display: none; }
+  .masthead { align-items: center; }
+  .masthead-actions { gap: 0; margin-right: -6px; }
+  .masthead .text-btn { padding-inline: 6px; white-space: nowrap; }
+  .panel { border-left: 0; }
+  .panel-scroll { overflow: visible; padding-inline: 16px; }
+  .actions { position: sticky; bottom: 0; z-index: 2; padding-inline: 16px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition: none !important; }
+}
