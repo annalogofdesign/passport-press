@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Assets</title>
+<!-- Renders og.jpg (#og, 1200×630) and icon.png (#icon, 180×180) from the app's own stamps.
+     Not part of the site: files starting with _ aren't published by GitHub Pages. -->
+<style>
+  html, body { margin: 0; background: transparent; }
+  .og { position: relative; width: 1200px; height: 630px; overflow: hidden; display: grid; place-items: center; font-family: "Inter Tight", sans-serif; color: oklch(0.23 0.028 219.7); }
+  .og > svg.paper { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .og .inner { position: relative; display: grid; justify-items: center; gap: 28px; }
+  .og .logo { width: 560px; mix-blend-mode: multiply; }
+  .og .logo svg, .icon svg { display: block; width: 100%; height: auto; overflow: visible; }
+  .og p { margin: 0; font-size: 34px; font-weight: 500; letter-spacing: -0.01em; }
+  .icon { width: 180px; height: 180px; display: grid; place-items: center; }
+  .icon > div { width: 172px; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="module">
+  import { DEFAULT_STAMP, stampSVG } from './render.js';
+  import { paperMarkup } from './paper.js';
+  import { FACES, loadFaces, measurer } from './fonts.js';
+  await loadFaces(() => {});
+  const face = FACES.grotesk;
+  const base = { ...DEFAULT_STAMP, top: '', date: '', bottom: '', mark: 'none', ink: '#21539c', tilt: 0, wobble: 0, roughness: 1.2, voids: 0.2, pressure: 0.25, inkOpacity: 0.95, doubleStrike: false };
+  const root = document.getElementById('root');
+  if (location.hash === '#og') {
+    const logo = stampSVG({ ...base, frame: 'rect', word: 'Passport', sub: 'Press', rule: 1.4, corner: 8, seed: 1917 }, { uid: 'l', face, measure: measurer(face), subScale: 2.4 });
+    root.innerHTML = `<div class="og"><svg class="paper" viewBox="-300 -157.5 600 315" preserveAspectRatio="none">${paperMarkup('grid', { x: -300, y: -157.5, w: 600, h: 315 }, 'p', 0.6)}</svg>
+      <div class="inner"><div class="logo">${logo}</div><p>Turn a name, a phrase or a logo into a passport stamp.</p></div></div>`;
+  } else {
+    const icon = stampSVG({ ...base, frame: 'circle', word: 'PP', sub: '', rule: 2.6, roughness: 0.8, voids: 0.1, seed: 7 }, { uid: 'i', face: { ...face, scale: 2.3 }, measure: measurer(face) });
+    root.innerHTML = `<div class="icon"><div>${icon}</div></div>`;
+  }
+  document.body.dataset.ready = '1';
+</script>
+</body>
+</html>

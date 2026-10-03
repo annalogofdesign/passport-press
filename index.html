@@ -3,18 +3,27 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>Stamp Maker</title>
-  <meta name="description" content="Turn a name, a phrase or a logo into a passport stamp. Pick a shape, an ink and a typeface, then download it as a PNG or SVG.">
+  <title>Passport Press</title>
+  <meta name="description" content="Passport Press turns a name, a phrase or a logo into a passport stamp. Pick a shape, an ink and a paper, then download it as a PNG or SVG.">
   <meta name="theme-color" content="#fbf8f0">
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32' fill='none' stroke='%2321539c'%3E%3Ccircle cx='16' cy='16' r='13' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='7.5' stroke-width='1.5'/%3E%3C/svg%3E">
+  <link rel="icon" href="icon.png">
+  <link rel="apple-touch-icon" href="icon.png">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Passport Press">
+  <meta property="og:description" content="Turn a name, a phrase or a logo into a passport stamp.">
+  <meta property="og:url" content="https://annalogofdesign.github.io/passport-press/">
+  <meta property="og:image" content="https://annalogofdesign.github.io/passport-press/og.jpg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary_large_image">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
   <main class="stage" data-stage>
     <svg class="paper" data-paper aria-hidden="true" focusable="false" preserveAspectRatio="none"></svg>
     <header class="masthead">
-      <div>
-        <h1>Stamp Maker</h1>
+      <div class="brand">
+        <h1><span class="sr-only">Passport Press</span><span class="brand-stamp" data-brand aria-hidden="true"></span></h1>
         <p class="tagline">Turn a name, a phrase or a logo into a passport stamp.</p>
       </div>
       <div class="masthead-actions">
@@ -28,7 +37,6 @@
       </div>
     </header>
     <button type="button" class="stamp" data-press aria-label="Press the stamp again with fresh ink"></button>
-    <div class="tool" data-tool aria-hidden="true"><div class="tool-shadow"></div><div class="tool-block"><div class="tool-knob"></div></div></div>
     <p class="hint" data-hint></p>
   </main>
 
@@ -167,7 +175,7 @@
         <label class="check"><input type="checkbox" name="withPaper"> Include the paper in the file</label>
       </section>
 
-      <p class="credit">Made by Anna Skopenko. Typefaces are open source: Inter Tight, Barlow Condensed, Courier Prime, Zilla Slab.</p>
+      <p class="credit">Passport Press is made by Anna Skopenko. Typefaces are open source: Inter Tight, Barlow Condensed, Courier Prime, Zilla Slab.</p>
       <button type="button" class="text-btn start-over" data-reset>Start over with a new stamp</button>
     </div>
 

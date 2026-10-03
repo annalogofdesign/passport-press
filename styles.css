@@ -70,8 +70,11 @@ button, label, select { touch-action: manipulation; }
   justify-content: space-between;
   gap: 16px;
 }
-h1 { font-size: 17px; font-weight: 650; letter-spacing: -0.01em; white-space: nowrap; }
-.tagline { margin-top: 2px; color: var(--muted); }
+/* The logo is a stamp from the tool itself, pressed straight */
+.brand { display: flex; align-items: center; gap: 14px; }
+.brand-stamp { display: block; width: 124px; mix-blend-mode: multiply; }
+.brand-stamp svg { display: block; width: 100%; height: auto; overflow: visible; }
+.tagline { max-width: 22ch; font-size: 14px; color: var(--muted); text-wrap: balance; }
 .masthead-actions { display: flex; align-items: center; gap: 4px; margin: -4px 0 0; }
 .icon-btn {
   display: grid;
@@ -101,47 +104,13 @@ h1 { font-size: 17px; font-weight: 650; letter-spacing: -0.01em; white-space: no
   border: 0;
   border-radius: 12px;
   background: none;
-  cursor: pointer;
+  cursor: var(--cursor, pointer), pointer;
   mix-blend-mode: multiply; /* ink soaks into the paper rather than sitting on it */
   -webkit-tap-highlight-color: transparent;
 }
+.stamp:active { cursor: var(--cursor-down, pointer), pointer; }
 .stamp:focus-visible { outline-offset: 8px; }
 .stamp svg { display: block; width: 100%; height: auto; overflow: visible; }
-
-/* The rubber stamp itself, seen from above: a wooden block with a knob in the ink's colour.
-   Only there while it presses; hero.js-style choreography lives in app.js */
-.tool {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  z-index: 3;
-  width: var(--tw);
-  height: var(--th);
-  translate: calc(-50% + var(--tx, 0px)) -50%;
-  rotate: var(--tr);
-  opacity: 0;
-  pointer-events: none;
-}
-.tool-shadow, .tool-block { position: absolute; inset: 0; border-radius: var(--radius); }
-.tool-shadow { background: oklch(0.2 0.03 60); filter: blur(10px); opacity: 0; }
-.tool-block {
-  display: grid;
-  place-items: center;
-  background:
-    repeating-linear-gradient(94deg, oklch(0.45 0.07 55 / 0.12) 0 1px, transparent 1px 7px, oklch(0.45 0.07 55 / 0.07) 7px 9px, transparent 9px 15px),
-    linear-gradient(155deg, oklch(0.78 0.08 72), oklch(0.65 0.09 58));
-  box-shadow:
-    inset 0 1px 0 oklch(1 0 0 / 0.4),
-    inset 0 -4px 0 oklch(0.42 0.07 50 / 0.35),
-    0 0 0 1px oklch(0.38 0.06 50 / 0.45);
-}
-.tool-knob {
-  width: var(--knob);
-  aspect-ratio: 1;
-  border-radius: 50%;
-  background: radial-gradient(circle at 34% 30%, color-mix(in oklch, var(--ink-c) 45%, white) 0 7%, var(--ink-c) 42%, color-mix(in oklch, var(--ink-c) 65%, black));
-  box-shadow: 0 0 0 1px oklch(0 0 0 / 0.25), 0 8px 16px oklch(0.2 0.03 60 / 0.35);
-}
 
 .hint {
   position: absolute;
@@ -389,6 +358,7 @@ input[type="text"]:focus-visible, select:focus-visible { outline-offset: 0; bord
   .masthead { inset: 10px 16px auto; }
   .tagline, .hint { display: none; }
   .masthead { align-items: center; }
+  .brand-stamp { width: 92px; }
   .masthead-actions { gap: 0; margin-right: -6px; }
   .masthead .text-btn { padding-inline: 6px; white-space: nowrap; }
   .panel { border-left: 0; }

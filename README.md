@@ -1,4 +1,4 @@
-# Stamp Maker
+# Passport Press
 
 Turns a name, a phrase or a logo into a passport stamp, in the style of the stamps on
 Anna Skopenko's portfolio. Plain HTML, CSS and ES modules: no build step, no server, no accounts.
@@ -30,6 +30,7 @@ paper.js     the papers a stamp can sit on
 logo.js      turns an SVG, PNG or JPG into one ink colour
 export.js    SVG and PNG files
 examples.js  the ready-made stamps behind "Surprise me" (the first is what a new visitor sees)
+_render-assets.html  renders og.jpg and icon.png from the app's own stamps (not published)
 sound.js     the thud, synthesised; the same sound as the portfolio's stamps
 ```
 

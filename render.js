@@ -118,7 +118,7 @@ function centreMark(s, c, { x, y, w, h }, wordSize) {
   if (!word) return '';
   const big = fit(word, w, wordSize, wordSize * 0.1, c);
   if (!sub) return `<text x="${cx}" y="${y + h / 2 + big.size * 0.36}" text-anchor="middle" ${big.attrs}>${esc(word)}</text>`;
-  const small = fit(sub, w, 12, 3, c);
+  const small = fit(sub, w, 12 * c.subScale, 3, c);
   const block = big.size * 0.72 + 8 + small.size * 0.72;
   const top = y + h / 2 - block / 2;
   return `<text x="${cx}" y="${top + big.size * 0.72}" text-anchor="middle" ${big.attrs}>${esc(word)}</text>
@@ -238,9 +238,10 @@ export function stampBox(s, margin = 0) {
 /**
  * options.face: { family, weight, scale } · options.measure: width of a string at 1px, in that face
  * options.logo: data URL of a white-on-clear mask · options.fontCSS: @font-face rules to embed
+ * options.subScale: how large the second line is, relative to its usual size (the logo sets both lines alike)
  * options.width: pixel width, for a standalone file · options.paper: draw the stamp's paper under it
  */
-export function stampSVG(s, { uid = 's', face, measure = estimate, logo = null, fontCSS = '', width = null, paper = false } = {}) {
+export function stampSVG(s, { uid = 's', face, measure = estimate, logo = null, fontCSS = '', width = null, paper = false, subScale = 1 } = {}) {
   const rng = mulberry32(s.seed);
   const grainSeed = Math.floor(rng() * 1000);
   const blotchSeed = Math.floor(rng() * 1000);
@@ -250,7 +251,7 @@ export function stampSVG(s, { uid = 's', face, measure = estimate, logo = null, 
 
   const { W, H } = frameSize(s);
   const box = stampBox(s, paper ? PAPER_MARGIN : 0);
-  const c = { uid, measure, scale: face.scale, logo };
+  const c = { uid, measure, scale: face.scale, logo, subScale };
 
   // Ink only lands where the rubber meets the paper hard enough. Pressure, a wide dry-patch
   // noise and a fine grain are summed and cut off sharply, so a weak press breaks up into

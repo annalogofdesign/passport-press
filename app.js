@@ -1,7 +1,7 @@
 // The editor: one stamp held in `state`, drawn on the stage, changed by the form.
 // Nothing leaves the browser. The stamp is kept in localStorage and can travel in a link.
 
-import { DEFAULT_STAMP, FRAMES, INKS, stampSVG, stampBox, frameSize, angle } from './render.js';
+import { DEFAULT_STAMP, FRAMES, INKS, stampSVG, stampBox } from './render.js';
 import { EXAMPLES } from './examples.js';
 import { thud } from './sound.js';
 import { FACES, loadFaces, measurer } from './fonts.js';
@@ -17,7 +17,6 @@ const form = document.getElementById('controls');
 const stage = document.querySelector('[data-stage]');
 const stampEl = document.querySelector('[data-press]');
 const paperEl = document.querySelector('[data-paper]');
-const tool = document.querySelector('[data-tool]');
 const hint = document.querySelector('[data-hint]');
 const status = document.querySelector('[data-status]');
 const logoError = document.querySelector('[data-logo-error]');
@@ -133,7 +132,29 @@ function save() {
 
 // ---------- Drawing ----------
 
+// The pointer over the stamp is a little rubber stamp with the current ink on its rubber.
+// Held down, it is drawn lower, so it pushes into the page.
+const stampCursor = (ink, down) => {
+  const y = down ? 3 : 0;
+  const parts = `<ellipse cx="16" cy="${6 + y}" rx="5" ry="4.5" fill="#3a2a1e"/>
+    <rect x="13.5" y="${9.5 + y}" width="5" height="6" fill="#c79a66"/>
+    <rect x="${down ? 6 : 7}" y="${15 + y}" width="${down ? 20 : 18}" height="7" rx="1.5" fill="#c79a66"/>
+    <rect x="8" y="${22 + y}" width="16" height="3" fill="${ink}"/>`;
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
+    <g stroke="#fff" stroke-width="3" stroke-linejoin="round">${parts}</g>
+    <g stroke="#1d1a17" stroke-width="1" stroke-linejoin="round">${parts}</g></svg>`;
+  return `url("data:image/svg+xml,${encodeURIComponent(svg)}") 16 25`;
+};
+let cursorInk = '';
+function paintCursor() {
+  if (cursorInk === state.ink) return;
+  cursorInk = state.ink;
+  stampEl.style.setProperty('--cursor', stampCursor(state.ink, false));
+  stampEl.style.setProperty('--cursor-down', stampCursor(state.ink, true));
+}
+
 function draw() {
+  paintCursor();
   const face = FACES[state.font];
   stampEl.style.setProperty('--bw', stampBox(state).w.toFixed(1));
   stampEl.innerHTML = stampSVG(state, { uid: 'p', face, measure: measurer(face), logo: logoMask });
@@ -271,6 +292,19 @@ form.addEventListener('change', (e) => {
   e.target.value = ''; // so choosing the same file again still fires
 });
 
+// ---------- The logo: a Passport Press stamp, pressed straight ----------
+
+const BRAND = {
+  ...DEFAULT_STAMP,
+  frame: 'rect', top: '', word: 'Passport', sub: 'Press', date: '', bottom: '', mark: 'none',
+  ink: '#21539c', font: 'grotesk', tilt: 0, wobble: 0, rule: 1.4, corner: 8,
+  roughness: 1.2, voids: 0.2, pressure: 0.25, inkOpacity: 0.95, seed: 1917,
+};
+function drawBrand() {
+  document.querySelector('[data-brand]').innerHTML = stampSVG(BRAND, { uid: 'brand', face: FACES.grotesk, measure: measurer(FACES.grotesk), subScale: 2.4 });
+}
+drawBrand();
+
 // ---------- Pressing ----------
 
 const HINT = 'Click the stamp to press it again';
@@ -283,7 +317,6 @@ function reink() {
   state.wobble = side * Math.round(1 + Math.random() * 3);
 }
 
-const TOOL_RADIUS = { oval: '50%', circle: '50%' };
 let running = [];
 
 // Sound is on unless someone turned it off
@@ -300,53 +333,21 @@ soundButton.addEventListener('click', () => {
 });
 paintSound();
 
-// The rubber stamp comes down, the ink is there on impact, and the stamp lifts away.
+// Ink on impact: it's there at once, the stamp settles, the paper jolts.
 // `loud` is only for presses someone asked for: browsers won't play sound before a click anyway.
-function land({ duration = 560, delay = 0, loud = true } = {}) {
+function land({ delay = 0, loud = true } = {}) {
   running.forEach((animation) => animation.cancel());
   draw();
-  if (loud && soundOn) thud(matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : (delay + duration * 0.45) / 1000);
+  if (loud && soundOn) thud(delay / 1000);
   if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-
-  const unit = stampEl.clientWidth / stampBox(state).w;
-  const { W, H } = frameSize(state);
-  const block = state.frame === 'postmark' ? { w: 210, h: 210 } : { w: W, h: H }; // the bars are a second, smaller die
-  tool.style.cssText = `--tw:${block.w * unit}px; --th:${block.h * unit}px; --tr:${angle(state)}deg;
-    --tx:${state.frame === 'postmark' ? -45 * unit : 0}px; --knob:${Math.min(block.w, block.h) * unit * 0.4}px;
-    --ink-c:${state.ink}; --radius:${TOOL_RADIUS[state.frame] || `${8 * unit}px`}`;
-
-  const timing = { duration, delay, fill: 'backwards' };
-  const fall = 'cubic-bezier(0.55, 0, 0.85, 0.35)';
-  const lift = 'cubic-bezier(0.2, 0.8, 0.3, 1)';
+  const timing = { duration: 240, delay, fill: 'backwards', easing: 'cubic-bezier(0.23, 1, 0.32, 1)' };
   running = [
-    tool.animate([
-      { opacity: 0, transform: 'scale(1.5)', easing: fall },
-      { opacity: 1, offset: 0.15 },
-      { opacity: 1, transform: 'scale(1)', offset: 0.45 },
-      { opacity: 1, transform: 'scale(0.985)', offset: 0.52 },
-      { opacity: 1, transform: 'scale(1)', offset: 0.6, easing: lift },
-      { opacity: 0, transform: 'scale(1.35)' },
-    ], timing),
-    tool.firstElementChild.animate([
-      { opacity: 0.12, transform: 'translate(18px, 34px)', easing: fall },
-      { opacity: 0.5, transform: 'translate(2px, 3px)', offset: 0.45 },
-      { opacity: 0.5, transform: 'translate(2px, 3px)', offset: 0.6, easing: lift },
-      { opacity: 0, transform: 'translate(16px, 30px)' },
-    ], timing),
     stampEl.animate([
-      { opacity: 1 },
-      { opacity: 0, offset: 0.12 },
-      { opacity: 0, offset: 0.45 },
-      { opacity: 1, offset: 0.46 },
-      { opacity: 1 },
-    ], { ...timing, fill: delay ? 'backwards' : 'none' }),
-    // The thud: paper and ink jolt as the stamp hits
-    ...[paperEl, stampEl].map((el) => el.animate([
-      { transform: 'translateY(0)' },
-      { transform: 'translateY(0)', offset: 0.45 },
-      { transform: 'translateY(1.5px)', offset: 0.49 },
-      { transform: 'translateY(0)', offset: 0.62 },
-    ], timing)),
+      { opacity: 0, transform: 'scale(1.03)' },
+      { opacity: 1, transform: 'scale(1.03)', offset: 0.05 },
+      { opacity: 1, transform: 'scale(1)' },
+    ], timing),
+    paperEl.animate([{ transform: 'translateY(1.5px)' }, { transform: 'translateY(0)' }], timing),
   ];
 }
 
@@ -367,7 +368,7 @@ document.querySelector('[data-surprise]').addEventListener('click', () => {
   status.textContent = '';
   sync();
   save();
-  land({ duration: 640 });
+  land();
 });
 
 // ---------- Leaving with a stamp ----------
@@ -440,7 +441,7 @@ document.querySelector('[data-reset]').addEventListener('click', () => {
   status.textContent = '';
   sync();
   retrace();
-  land({ duration: 640 });
+  land();
 });
 
 // ---------- Start ----------
@@ -453,7 +454,7 @@ retrace();
 try {
   if (!sessionStorage.getItem('stamp-maker:landed')) {
     sessionStorage.setItem('stamp-maker:landed', '1');
-    requestAnimationFrame(() => land({ duration: 720, delay: 350, loud: false }));
+    requestAnimationFrame(() => land({ delay: 350, loud: false }));
   }
 } catch {}
-loadFaces(draw); // text refits as each face's real metrics arrive
+loadFaces(() => { draw(); drawBrand(); }); // text refits as each face's real metrics arrive
